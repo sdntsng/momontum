@@ -1,8 +1,9 @@
 # Momontum - Crypto Data Harvester
 # ================================
 
-# Core async exchange library
+# Core exchange library (sync) + pro (async websockets)
 ccxt>=4.0.0
+ccxtpro
 
 # Data processing
 pandas>=2.0.0
