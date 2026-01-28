@@ -98,9 +98,19 @@ class DataHarvester:
         filename = f"{self.exchange_id}_{safe_symbol}_{timestamp}.parquet"
         filepath = os.path.join(config.DATA_DIR, filename)
 
-        # Save using PyArrow engine
-        df.to_parquet(filepath, engine='pyarrow', compression='snappy')
-        
+        # Save with explicit schema (stable dtypes)
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+
+            from momontum.schemas import TICKS_SCHEMA_V1
+
+            table = pa.Table.from_pandas(df, schema=TICKS_SCHEMA_V1, preserve_index=False)
+            pq.write_table(table, filepath, compression="snappy")
+        except Exception:
+            # Fallback to pandas inference if schema alignment fails (keeps harvester robust).
+            df.to_parquet(filepath, engine="pyarrow", compression="snappy")
+
         logger.info(f"💾 {symbol}: Flushed {len(df)} records to {filename}")
         self.buffers[symbol] = []  # Clear specific buffer
 
