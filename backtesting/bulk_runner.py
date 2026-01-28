@@ -45,8 +45,13 @@ def run_strategy(strategy, records, processor=None):
         signal = strategy.on_tick(record, prediction)
         
         # Execution (Simulated)
-        mid_price = (record['bid'] + record['ask']) / 2 if record['bid'] and record['ask'] else record['last']
-        if not mid_price: continue
+        mid_price = (
+            (record["bid"] + record["ask"]) / 2
+            if record["bid"] and record["ask"]
+            else record["last"]
+        )
+        if not mid_price:
+            continue
 
         if position is None:
             if signal == Signal.BUY:
@@ -77,7 +82,8 @@ def run_strategy(strategy, records, processor=None):
 
 def main():
     df = load_data()
-    if df is None: return
+    if df is None:
+        return
     
     # Ensure symbol column exists (handle legacy data)
     if 'symbol' not in df.columns:

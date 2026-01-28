@@ -1,6 +1,6 @@
-from river import linear_model, preprocessing, compose, stats, optim, metrics
-from river import time_series
 import logging
+
+from river import compose, linear_model, metrics, optim, preprocessing
 
 logger = logging.getLogger(__name__)
 

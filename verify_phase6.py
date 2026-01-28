@@ -1,5 +1,4 @@
 import asyncio
-import os
 import glob
 import pandas as pd
 from harvester import DataHarvester

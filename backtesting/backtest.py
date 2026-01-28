@@ -1,7 +1,6 @@
 import sys
 import os
 import glob
-import pandas as pd
 import polars as pl
 import logging
 
@@ -56,8 +55,6 @@ def run_backtest():
         signal = strategy.check_signal(record, prediction)
         
         # 3. Execution Simulation
-        mid_price = (record['bid'] + record['ask']) / 2
-        
         if position is None:
             if signal == Signal.BUY:
                 position = 'LONG'

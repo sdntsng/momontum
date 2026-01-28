@@ -4,19 +4,27 @@ Momontum Data Harvester
 Production-grade async engine for streaming crypto market data.
 
 Features:
-- Connects to Binance Futures via WebSocket (using ccxt.pro)
-- Streams Tickers (Price) and Trades (Volume)
+- Connects to an exchange via ccxt (uses websockets when ccxt.pro is available; falls back to polling)
+- Streams/collects BBO data (bid/ask)
 - Buffers data in memory and dumps to Parquet every minute
 - Telegram Alert skeleton for crash notifications
 - Multi-Asset Support via AssetManager
 """
 
 import asyncio
-import ccxt.pro as ccxt
-import pandas as pd
-import os
-from datetime import datetime
 import logging
+import os
+import time
+from datetime import datetime
+
+import pandas as pd
+
+# ccxt.pro provides websocket streaming but requires a paid license.
+# Keep Momontum runnable with open-source ccxt by default.
+try:  # pragma: no cover
+    import ccxt.pro as ccxt  # type: ignore
+except Exception:  # pragma: no cover
+    import ccxt.async_support as ccxt  # type: ignore
 
 import config
 from data_lake.asset_manager import AssetManager
@@ -103,9 +111,18 @@ class DataHarvester:
         try:
             while self.is_running:
                 try:
-                    # Fetch Order Book (L1) - Real-time BBO
-                    orderbook = await self.exchange.watch_order_book(symbol, limit=5)
-                    
+                    # Fetch Order Book (L1) - Real-time BBO.
+                    # Use websockets when available (ccxt.pro); otherwise poll via open-source ccxt.
+                    if hasattr(self.exchange, "watch_order_book"):
+                        orderbook = await self.exchange.watch_order_book(symbol, limit=5)
+                    else:
+                        orderbook = await self.exchange.fetch_order_book(symbol, limit=5)
+                        # Avoid a tight loop when polling.
+                        await asyncio.sleep(0.5)
+
+                    ts = orderbook.get("timestamp") or int(time.time() * 1000)
+                    dt = orderbook.get("datetime") or self.exchange.iso8601(ts)
+
                     bid = orderbook['bids'][0][0] if orderbook['bids'] else None
                     ask = orderbook['asks'][0][0] if orderbook['asks'] else None
                     bid_vol = orderbook['bids'][0][1] if orderbook['bids'] else None
@@ -114,8 +131,8 @@ class DataHarvester:
                     # Flatten the data structure
                     record = {
                         'symbol': symbol, # Add symbol to record
-                        'timestamp': orderbook['timestamp'],
-                        'datetime': orderbook['datetime'],
+                        'timestamp': ts,
+                        'datetime': dt,
                         'bid': bid,
                         'ask': ask,
                         'bidVolume': bid_vol,
