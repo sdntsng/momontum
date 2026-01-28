@@ -12,7 +12,6 @@ from data_lake.asset_manager import AssetManager
 from backtesting.bulk_runner import run_strategy, load_data
 from strategies.momentum import MomentumStrategy
 from strategies.mean_reversion import MeanReversionStrategy
-import config
 
 app = FastAPI(title="Momontum API")
 
