@@ -19,16 +19,29 @@ def _cmd_harvest(args: argparse.Namespace) -> None:
         harvester.stop()
 
 
-def _cmd_backtest(args: argparse.Namespace) -> None:
-    if args.mode == "bulk":
-        from backtesting.bulk_runner import main as bulk_main
+def _cmd_backtest_run(args: argparse.Namespace) -> None:
+    from .ledger import PaperLedger
+    from .backtest.runner import BacktestRunner
+    from .backtest.strategies import BuyAndHoldStrategy, GoldenCrossStrategy
 
-        bulk_main()
+    ledger = PaperLedger()
+    
+    strategy = None
+    if args.strategy == "buy_hold":
+        strategy = BuyAndHoldStrategy()
+    elif args.strategy == "golden_cross":
+        strategy = GoldenCrossStrategy()
+    else:
+        print(f"Unknown strategy: {args.strategy}")
         return
 
-    from backtesting.backtest import run_backtest
+    runner = BacktestRunner(data_path=args.parquet_path, strategy=strategy, ledger=ledger)
+    runner.run()
 
-    run_backtest()
+
+def _cmd_backtest_bulk(args: argparse.Namespace) -> None:
+    from backtesting.bulk_runner import main as bulk_main
+    bulk_main()
 
 
 def _cmd_candles_build(args: argparse.Namespace) -> None:
@@ -47,13 +60,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_harvest.set_defaults(func=_cmd_harvest)
 
     p_backtest = sub.add_parser("backtest", help="Run backtests")
-    p_backtest.add_argument(
-        "--mode",
-        choices=["single", "bulk"],
-        default="bulk",
-        help="Backtest mode",
-    )
-    p_backtest.set_defaults(func=_cmd_backtest)
+    bt_subs = p_backtest.add_subparsers(dest="backtest_cmd", required=True)
+
+    p_run = bt_subs.add_parser("run", help="Run strategy on candles")
+    p_run.add_argument("parquet_path", help="Input parquet file")
+    p_run.add_argument("--strategy", default="buy_hold", choices=["buy_hold", "golden_cross"], help="Strategy name")
+    p_run.set_defaults(func=_cmd_backtest_run)
+
+    p_bulk = bt_subs.add_parser("bulk", help="Run legacy bulk backtest")
+    p_bulk.set_defaults(func=_cmd_backtest_bulk)
 
     p_candles = sub.add_parser("candles", help="Candle utilities")
     sub_candles = p_candles.add_subparsers(dest="candles_cmd", required=True)
