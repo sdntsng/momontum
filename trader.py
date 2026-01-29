@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import config
 from strategy import Signal
@@ -14,12 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 class Trader:
-    """Handles order execution on an exchange."""
+    """
+    Handles Order Execution on Binance Futures.
+    Checks risk limits and manages active positions.
+    """
 
     def __init__(self, exchange: "ccxt.Exchange", dry_run: bool = True):
         self.exchange = exchange
         self.dry_run = dry_run
-        self.positions = {}  # Dictionary to track positions per symbol
+        self.positions: dict[str, Any] = {}  # Dictionary to track positions per symbol
         self.trade_size_usd = 100  # Default trade size in USD
 
     async def get_balance(self):
@@ -50,6 +54,9 @@ class Trader:
             # Calculate quantity
             # quantity = self.trade_size_usd / current_price
             # Precision handling needed here in prod (amount_to_precision)
+            # For now, minimal placeholder logic
+
+            _side = "buy" if signal == Signal.BUY else "sell"
 
             # Simple Market Order for MVP
             # side = 'buy' if signal == Signal.BUY else 'sell'
