@@ -14,9 +14,9 @@ Features:
 import asyncio
 import logging
 import os
-<<<<<<< HEAD
 import time
 from datetime import datetime
+from typing import Any
 
 import pandas as pd
 
@@ -26,13 +26,6 @@ try:  # pragma: no cover
     import ccxt.pro as ccxt  # type: ignore
 except Exception:  # pragma: no cover
     import ccxt.async_support as ccxt  # type: ignore
-=======
-from datetime import datetime
-from typing import Any
-
-import ccxt.pro as ccxt
-import pandas as pd
->>>>>>> master
 
 import config
 from data_lake.asset_manager import AssetManager
@@ -109,7 +102,6 @@ class DataHarvester:
         filename = f"{self.exchange_id}_{safe_symbol}_{timestamp}.parquet"
         filepath = os.path.join(config.DATA_DIR, filename)
 
-<<<<<<< HEAD
         # Save with explicit schema (stable dtypes)
         try:
             import pyarrow as pa
@@ -122,10 +114,6 @@ class DataHarvester:
         except Exception:
             # Fallback to pandas inference if schema alignment fails (keeps harvester robust).
             df.to_parquet(filepath, engine="pyarrow", compression="snappy")
-=======
-        # Save using PyArrow engine
-        df.to_parquet(filepath, engine="pyarrow", compression="snappy")
->>>>>>> master
 
         logger.info(f"💾 {symbol}: Flushed {len(df)} records to {filename}")
         self.buffers[symbol] = []  # Clear specific buffer
@@ -137,7 +125,6 @@ class DataHarvester:
         try:
             while self.is_running:
                 try:
-<<<<<<< HEAD
                     # Fetch Order Book (L1) - Real-time BBO.
                     # Use websockets when available (ccxt.pro); otherwise poll via open-source ccxt.
                     if hasattr(self.exchange, "watch_order_book"):
@@ -168,29 +155,6 @@ class DataHarvester:
                         'spread': ask - bid if ask and bid else None,
                         'spread_pct': ((ask - bid) / bid * 100) if ask and bid else None,
                         'local_timestamp': datetime.now().timestamp()
-=======
-                    # Fetch Order Book (L1) - Real-time BBO
-                    orderbook = await self.exchange.watch_order_book(symbol, limit=5)
-
-                    bid = orderbook["bids"][0][0] if orderbook["bids"] else None
-                    ask = orderbook["asks"][0][0] if orderbook["asks"] else None
-                    bid_vol = orderbook["bids"][0][1] if orderbook["bids"] else None
-                    ask_vol = orderbook["asks"][0][1] if orderbook["asks"] else None
-
-                    # Flatten the data structure
-                    record = {
-                        "symbol": symbol,  # Add symbol to record
-                        "timestamp": orderbook["timestamp"],
-                        "datetime": orderbook["datetime"],
-                        "bid": bid,
-                        "ask": ask,
-                        "bidVolume": bid_vol,
-                        "askVolume": ask_vol,
-                        "last": None,
-                        "spread": ask - bid if ask and bid else None,
-                        "spread_pct": ((ask - bid) / bid * 100) if ask and bid else None,
-                        "local_timestamp": datetime.now().timestamp(),
->>>>>>> master
                     }
 
                     self.buffers[symbol].append(record)
