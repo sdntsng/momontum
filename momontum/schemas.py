@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import pyarrow as pa
 
-
 TICKS_SCHEMA_V1 = pa.schema(
     [
         ("symbol", pa.string()),

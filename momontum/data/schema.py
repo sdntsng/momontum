@@ -20,7 +20,6 @@ from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-
 SCHEMA_VERSION_KEY = "momontum:schema_version"
 
 
@@ -55,9 +54,7 @@ def read_schema_version(table: pa.Table) -> SchemaVersion:
     md = table.schema.metadata or {}
     raw = md.get(SCHEMA_VERSION_KEY.encode("utf-8"))
     if raw is None:
-        raise SchemaValidationError(
-            f"Missing required Parquet metadata key {SCHEMA_VERSION_KEY!r}"
-        )
+        raise SchemaValidationError(f"Missing required Parquet metadata key {SCHEMA_VERSION_KEY!r}")
 
     try:
         value = raw.decode("utf-8")
@@ -95,9 +92,7 @@ def validate_required_schema(
 
         actual = table_schema.field(field.name)
         if actual.type != field.type:
-            type_mismatches.append(
-                f"{field.name}: expected {field.type}, got {actual.type}"
-            )
+            type_mismatches.append(f"{field.name}: expected {field.type}, got {actual.type}")
 
     if missing or type_mismatches:
         parts: list[str] = []
