@@ -31,14 +31,26 @@ jobs:
           pip install -r requirements.txt
           pip install ruff==0.6.8 mypy pytest
 
+      - name: Determine targets
+        id: targets
+        run: |
+          if [ -d momontum ]; then
+            echo "ruff_targets=momontum tests" >> "$GITHUB_OUTPUT"
+            echo "mypy_target=momontum" >> "$GITHUB_OUTPUT"
+          else
+            # Back-compat for older branches before the `momontum/` package existed.
+            echo "ruff_targets=." >> "$GITHUB_OUTPUT"
+            echo "mypy_target=." >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Ruff (lint)
-        run: python -m ruff check momontum tests
+        run: python -m ruff check ${{ steps.targets.outputs.ruff_targets }}
 
       - name: Ruff (format check)
-        run: python -m ruff format --check momontum tests
+        run: python -m ruff format --check ${{ steps.targets.outputs.ruff_targets }}
 
       - name: Mypy (typecheck)
-        run: python -m mypy momontum
+        run: python -m mypy ${{ steps.targets.outputs.mypy_target }}
 
       - name: Pytest
         run: python -m pytest -q
