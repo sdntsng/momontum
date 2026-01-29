@@ -19,3 +19,4 @@ python-telegram-bot>=20.0
 
 # Utilities
 python-dotenv>=1.0.0
+prettytable>=3.0.0
