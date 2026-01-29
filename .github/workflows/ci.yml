@@ -50,7 +50,7 @@ jobs:
         run: python -m ruff format --check ${{ steps.targets.outputs.ruff_targets }}
 
       - name: Mypy (typecheck)
-        run: python -m mypy ${{ steps.targets.outputs.mypy_target }}
+        run: python -m mypy --explicit-package-bases ${{ steps.targets.outputs.mypy_target }}
 
       - name: Pytest
         run: python -m pytest -q
