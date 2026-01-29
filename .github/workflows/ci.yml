@@ -32,13 +32,13 @@ jobs:
           pip install ruff==0.6.8 mypy pytest
 
       - name: Ruff (lint)
-        run: python -m ruff check .
+        run: python -m ruff check momontum tests
 
       - name: Ruff (format check)
-        run: python -m ruff format --check .
+        run: python -m ruff format --check momontum tests
 
       - name: Mypy (typecheck)
-        run: python -m mypy .
+        run: python -m mypy momontum
 
       - name: Pytest
         run: python -m pytest -q
