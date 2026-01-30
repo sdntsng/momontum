@@ -7,9 +7,8 @@ from pathlib import Path
 
 def _cmd_harvest(args: argparse.Namespace) -> None:
     # keep imports local so CLI stays fast and unit-testable
-    from harvester import DataHarvester
-
     import config
+    from harvester import DataHarvester
 
     basket_name = args.basket or config.TARGET_BASKET
     harvester = DataHarvester(basket_name=basket_name, exchange_id=args.exchange)

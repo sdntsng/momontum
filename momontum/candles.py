@@ -6,9 +6,9 @@ We compute OHLC from mid-price = (bid+ask)/2.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 import pandas as pd
 import pyarrow as pa
