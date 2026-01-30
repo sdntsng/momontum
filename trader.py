@@ -1,10 +1,15 @@
 import logging
 from typing import Any
 
-import ccxt.pro as ccxt
-
 import config
 from strategy import Signal
+
+# ccxt.pro provides websocket streaming but requires a paid license.
+# Keep Momontum runnable with open-source ccxt by default.
+try:  # pragma: no cover
+    import ccxt.pro as ccxt  # type: ignore
+except Exception:  # pragma: no cover
+    import ccxt.async_support as ccxt  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +20,7 @@ class Trader:
     Checks risk limits and manages active positions.
     """
 
-    def __init__(self, exchange: ccxt.Exchange, dry_run=True):
+    def __init__(self, exchange: "ccxt.Exchange", dry_run: bool = True):
         self.exchange = exchange
         self.dry_run = dry_run
         self.positions: dict[str, Any] = {}  # Dictionary to track positions per symbol
@@ -30,9 +35,7 @@ class Trader:
             return 0
 
     async def execute_trade(self, symbol: str, signal: str, current_price: float):
-        """
-        Executes a trade based on the signal.
-        """
+        """Executes a trade based on the signal."""
         if signal == Signal.HOLD:
             return
 
@@ -56,6 +59,7 @@ class Trader:
             _side = "buy" if signal == Signal.BUY else "sell"
 
             # Simple Market Order for MVP
+            # side = 'buy' if signal == Signal.BUY else 'sell'
             # order = await self.exchange.create_order(symbol, 'market', side, quantity)
             # logger.info(f"✅ Order Placed: {order['id']}")
 
